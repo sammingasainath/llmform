@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        #chat-container {
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        #chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        #user-input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-top: 1px solid #ccc;
+            font-size: 16px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 80%;
+        }
+        .user {
+            background-color: #e6f2ff;
+            text-align: right;
+            margin-left: auto;
+        }
+        .assistant {
+            background-color: #f0f0f0;
+        }
+        #action-buttons {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+        }
+        .action-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .action-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        #profile {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+        #profile-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        #profile-description {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <div id="action-buttons">
+            <div id="profile">
+                <img id="profile-pic" src="https://media.licdn.com/dms/image/C5603AQELYIKUciaL2A/profile-displayphoto-shrink_400_400/0/1633837995146?e=1729123200&v=beta&t=BBuI0VNf05SIGzejWL_IUL2ztlm273SZ05sn4ur_UqA" alt="Profile Picture">
+                <div id="profile-name">Srinivas Rao</div>
+                <div id="profile-description">Real Estate Expert at Aastee.com</div>
+            </div>
+            <a href="#" class="action-button" onclick="saveContact(); return false;">Save Contact</a>
+            <a href="https://aastee.com/" target="_blank" class="action-button">See Website</a>
+            <a href="https://www.youtube.com/channel/UC0TtkV_0lm0LP7cFHVIQdvQ" target="_blank" class="action-button">See YouTube Channel</a>
+            <a href="https://wa.me/919970018181" target="_blank" class="action-button">Say Hi on WhatsApp</a>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const actionButtons = document.getElementById('action-buttons');
+
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const message = userInput.value;
+                addMessage('user', message);
+                sendMessage(message);
+                userInput.value = '';
+            }
+        });
+
+        function addMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender);
+            messageElement.textContent = message;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendMessage(message) {
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMessage('assistant', data.message);
+                if (data.dataCollected) {
+                    userInput.disabled = true;
+                    chatMessages.style.display = 'none';
+                    actionButtons.style.display = 'flex';
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        function saveContact() {
+            const contactInfo = `BEGIN:VCARD
+VERSION:3.0
+FN:Srinivas Rao, Aastee.com
+TEL:9970018181
+URL:https://aastee.com/
+END:VCARD`;
+            const blob = new Blob([contactInfo], { type: 'text/vcard' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'Srinivas_Rao_Aastee.vcf';
+            link.click();
+        }
+
+        // Initial greeting
+        addMessage('assistant', "Hello! I'm your real estate assistant in Visakhapatnam. How can I help you today?");
+    </script>
+</body>
+</html>
